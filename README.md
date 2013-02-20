@@ -2,6 +2,10 @@
 
 A small web app to create PDF templates for sketching typefaces. Written in JavaScript. Uses jsPDF.
 
+### Demo
+
+[http://bencrowder.github.com/typlate/](http://bencrowder.github.com/typlate/)
+
 ### Usage
 
 You can set the y location of each guide using the textboxes. When you're happy with the proportions, click Download. The PDF will open in a new window (where you can print it or save it).

@@ -159,11 +159,12 @@ var Template = function() {
 		pdf.setFont('helvetica');
 		pdf.setTextColor(130, 130, 130);
 
-		var margin = 0.65;
+		var numRows = parseInt($("#rows-box").val());
+
+		var margin = 0.65;				// Outer margin
+
 		var pageWidth = 11;
 		var pageHeight = 8.5;
-		var lineWeight = 1 / 72;
-		var labelPadding = 4 / 72;
 
 		var right = pageWidth - margin;
 		var bottom = pageHeight - margin;
@@ -171,18 +172,29 @@ var Template = function() {
 		var frameWidth = pageWidth - (margin * 2);
 		var frameHeight = pageHeight - (margin * 2);
 
+		var rowPadding = numRows <= 2 ? 0.75 : 0.5;			// Margin between rows
+		var rowHeight = (frameHeight / numRows) - (rowPadding * (numRows - 1) / numRows);
+		var curRow = 0;
+
+		var fontSize = numRows <= 2 ? 6 : 4;
+
+		var lineWeight = 1 / 72;
+		var labelXPadding = numRows <= 2 ? (18 / 72) : (14 / 72);
+		var labelYPadding = numRows <= 2 ? (3 / 72) : (2 / 72);
+		var labelLine = numRows <= 2 ? (16 / 72) : (12 / 72);			// X coord of line to right of 100/200/300 labels
+
 		var getPDFHeight = function(height) {
-			return ((1000 - height) / 1000 * frameHeight) + margin;
+			return ((1000 - height) / 1000 * rowHeight) + margin + curRow;
 		};
 
 		var drawLine = function(line, label) {
 			var h = getPDFHeight(line.height);
 
 			pdf.setDrawColor(line.color[0], line.color[1], line.color[2]);
-			dashedLine(pdf, line, margin, h, right, h);
+			dashedLine(pdf, line, margin + labelXPadding, h, right, h);
 
-			pdf.setFontSize(6);
-			pdf.text(margin, h - labelPadding, label);
+			pdf.setFontSize(fontSize);
+			pdf.text(margin + labelXPadding, h - labelYPadding, label);
 
 			pdf.setDrawColor(0, 0, 0);
 		};
@@ -214,17 +226,26 @@ var Template = function() {
 			}
 		}
 
-		pdf.setFontSize(6);
-		for (var i=0; i<=1000; i+=100) {
-			pdf.text(0.4, getPDFHeight(i - 2), " " + i);	// - 2 for adjustment to center vertically
-		}
+		for (var i=0; i<numRows; i++) {
+			// Labels
+			pdf.setFontSize(fontSize);
+			for (var j=0; j<=1000; j+=100) {
+				pdf.text(0.6, getPDFHeight(j - 2), " " + j);	// - 2 for adjustment to center vertically
+			}
+			pdf.setDrawColor(200, 200, 200);
+			pdf.setLineWidth(1 / 72);
+			pdf.line(margin + labelLine, getPDFHeight(0), margin + labelLine, getPDFHeight(1000));
 
-		pdf.setLineWidth(lineWeight);
-		drawLine(this.ascender, 'ascender');
-		drawLine(this.cap_height, 'cap-height');
-		drawLine(this.x_height, 'x-height');
-		drawLine(this.baseline, 'baseline');
-		drawLine(this.descender, 'descender');
+			// Lines
+			pdf.setLineWidth(lineWeight);
+			drawLine(this.ascender, 'ascender');
+			drawLine(this.cap_height, 'cap-height');
+			drawLine(this.x_height, 'x-height');
+			drawLine(this.baseline, 'baseline');
+			drawLine(this.descender, 'descender');
+
+			curRow += rowHeight + rowPadding;
+		}
 		
 		return pdf;
 	};
